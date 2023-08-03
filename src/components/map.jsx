@@ -9,6 +9,7 @@ import {
   InfoWindowF,
   MarkerClustererF,
 } from "@react-google-maps/api";
+import { MarkerClusterer } from "@googlemaps/markerclusterer";
 import { customerslist } from "../data/customerslist";
 import Markers from "./Markers";
 import { polyData } from "../data/ula_all";
@@ -77,7 +78,6 @@ function Maps() {
   const MarkersData = customerslist["RB_nairobi_000"].map((m) => {
     return { lat: m.lat, lng: m.lng };
   });
-  console.log(MarkersData);
 
   const keyArray = multiheatMapData[heatKey[0]].map((m) => m.coordinates);
   const [selectedPolygon, setSelectedPolygon] = useState("");
@@ -163,19 +163,43 @@ function Maps() {
         onUnmount={onUnmount}
       >
         {MarkersData.length > 0 && (
-          <MarkerClustererF gridSize={10}>
-            {(clusterer) =>
-              MarkersData?.map((marker, index) => (
-                <MarkerF position={marker} clusterer={clusterer} key={index} />
-              ))
-            }
+          <MarkerClustererF gridSize={50}>
+            {(clusterer) => {
+              return customerKey.map((m) => {
+                return customerslist[m].map((markers) => {
+                  return (
+                    <MarkerF
+                      position={{
+                        lat: markers.lat,
+                        lng: markers.lng,
+                      }}
+                      clusterer={clusterer}
+                      onClick={() => handleMarkerInfo(markers)}
+                    >
+                      {selectedCustomer === markers && (
+                        <InfoWindowF
+                          position={{
+                            lat: markers.lat,
+                            lng: markers.lng,
+                          }}
+                        >
+                          <div>{markers["name"]}</div>
+                        </InfoWindowF>
+                      )}
+                    </MarkerF>
+                  );
+                });
+              });
+            }}
           </MarkerClustererF>
         )}
-        {/* <PolygonF
+        {/* {MarkersData?.map((marker, index) => {
+          return <MarkerF position={marker} key={index} />;
+        })} */}
+        <PolygonF
           path={polyData["nairobi"]["boundary"]["polygon"]}
           // onClick={()}
         />
-
         {polyKey.map((m) => {
           // Polygons
           const colors = handlePolygonColor(
@@ -193,8 +217,8 @@ function Maps() {
               }}
             />
           );
-        })} */}
-        {/* {selectedPolygon && (
+        })}{" "}
+        {selectedPolygon && (
           <InfoWindowF
             position={postionFormat()}
             onCloseClick={() => setSelectedPolygon(null)}
@@ -204,22 +228,11 @@ function Maps() {
               PolygonName={selectedPolygon}
             ></InfoWindowCard>
           </InfoWindowF>
-        )} */}
-        {/* <HeatmapLayerF data={latLngArray || []} /> */}
-        {/* {heatKey.map((m) => (
-          <HeatMap dataHeat={m} />
-        ))} */}
-        {/* {heatKey.map((m) => {
+        )}
+        {heatKey.map((m) => {
           return <HeatmapLayerF data={handleHeatmapData(m)} />;
-        })} */}
-        {/* <MarkerClustererF
-          averageCenter
-          enableRetinaIcons
-          gridSize={60}
-        ></MarkerClustererF> */}
-
-        {/* <HeatmapLayerF data={latLngArray || []} /> */}
-
+        })}
+        {/* <HeatmapLayerF data={latLngArray || []} />
         {/* {customerKey.map((m) => {
           return <Markers keyArray={m} />;
         })} */}
